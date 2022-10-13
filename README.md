@@ -1,14 +1,11 @@
 # Awesome `pytest` speedup
 
-A checklist of things to check and try to speed up your [pytest](https://pypi.org/project/pytest/) suite.
+A checklist of things to check and try to speed up your [pytest](TODO) suite.
 
-TL;DR:
-
-* [ ] Collection is fast
-* [ ] Hardware is fast
-* [ ] PYTHONDONTWRITEBYTECODE=1 is set
+* [ ] [Hardware is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#hardware)
+* [ ] [Collection is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#collection)
+* [ ] [PYTHONDONTWRITEBYTECODE=1 is set](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#pythondontwritebytecode)   
 * [ ] Built-in pytest plugins are disabled
-* [ ] [werkzeug/pyramid only] config.scan() is restrained
 * [ ] Network access is disabled
 * [ ] Disk access is disabled
 * [ ] Database access is optimized
@@ -29,6 +26,12 @@ In other words:
 For timing CLI commands, [`hyperfine`](https://github.com/sharkdp/hyperfine) is *fantastic*.
 
 # How do you run your tests?
+
+## Hardware
+
+Modern laptops are incredibly fast. Why spend hours of time waiting for tests if you can throw money at the problem? Get a faster machine!
+
+Using a CI that gets very expensive as you increase CPU cores? Most of them allow you to use [self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) for cheap. Buy a few Mac Minis and have them run your tests, using all of their modern fast cores. 
 
 ## Collection
 
@@ -54,16 +57,30 @@ If it is slower, you can try the following:
 
 * Maybe collection is slow because of some code in `contest.py`? Try running `pytest --collect-only --noconftest` to see if there is a difference. Much faster? Then it’s something in `conftest.py` that is causing the slowdown.
 
+* Maybe imports are making collection slow. Try this:
+    * `* python -X importtime -m pytest`
+    * Paste the output into https://kmichel.github.io/python-importtime-graph/
+    * See who the big offenders are
+    * Try moving top-level imports into function imports.
+    * This is especially likely to be the culprit if your code imports large libraries such as pytorch, opencv, Django, Plone, etc.
 
-## Better hardware
-
-## Split into smaller packages
 
 ## PYTHONDONTWRITEBYTECODE
 
+As per [The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/gotchas/#disabling-bytecode-pyc-files) there is no need to generate bytecode files on development machines.
+
+On CIs it makes even less sense to do so. And can potentially even slow down the execution of your test suite.
+
+Most people won't benefit a ton from this, but it's an easy thing to try.
+
+
 ## Disable plugins you don’t need
 
-## config.scan()
+Did you know that `pytest` comes with over 30 builtin plugins. You probably don’t need all of them.
+
+* List them with `pytest --trace-config`
+* Disable with `pytest -p no:doctest`
+* I usually only disable the legacy ones: `-p no:pastebin -p no:nose -p no:doctest`
 
 
 ## --durations
@@ -94,7 +111,7 @@ Pytest comes with a built-in flag `--durations` that prints out the slowest test
 * do it once and truncate
 * do it once and don't commit()
 
-# Parallelization 
+# Parallelization
 
 ## pytest-xdist
 
@@ -112,3 +129,16 @@ Pytest comes with a built-in flag `--durations` that prints out the slowest test
 ## pytest-instafail
 
 save CPU cycles, save money
+
+
+
+# Bonus karma points
+
+## [Pyramid] config.scan()
+
+If you are using Pyramid's `config.scan()`, that is a potential bottleneck in large codebases. You could speed it up by [telling it to ignore folders with tests](https://medium.com/partoo/speeding-up-tests-with-pytest-and-postgresql-a308b28228fe).
+
+```
+config.scan(ignore=[".tests"])
+config.scan("myapp", ignore=re.compile("tests?$").search)
+```
