@@ -40,17 +40,17 @@ If it is slower, you can try the following:
 
 * Tell `pytest` not to look into certain folders:
 
-```
-# pytest.ini
-[pytest]
-norecursedirs = docs *.egg-info .git .tox var/large_ml_model/
-```
+    ```
+    # pytest.ini
+    [pytest]
+    norecursedirs = docs *.egg-info .git .tox var/large_ml_model/
+    ```
 
 * Tell `pytest` where exactly the tests are so it doesn't look anywhere else
 
-```
-pytest src/my_app/tests
-```
+    ```
+    pytest src/my_app/tests
+    ```
 
 * Maybe collection is slow because of some code in `contest.py`? Try running `pytest --collect-only --noconftest` to see if there is a difference. Much faster? Then it’s something in `conftest.py` that is causing the slowdown.
 
