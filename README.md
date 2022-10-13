@@ -10,7 +10,7 @@ A checklist of best-practices to speed up your [pytest](https://pypi.org/project
 * [ ] [Network access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#network-access)
 * [ ] [Disk access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#disk-access)
 * [ ] [Database access is optimized](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#database-access)
-* [ ] Tests run in parallel
+* [ ] [Tests run in parallel]()
 
 With [general guidelines](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#measure-first) and some [extra tips](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#extra-tips).
 
@@ -32,6 +32,10 @@ For timing the entire test suite, [`hyperfine`](https://github.com/sharkdp/hyper
 For timing single tests, `pytest --durations 10` will print out the slowest ten tests.
 
 For measuring CPU usage and memory consumption, look at [`pytest-monitor`](https://pypi.org/project/pytest-monitor/).
+
+For detailed per-function-call profiling of tests, [`pytest-profiling`](https://pypi.org/project/pytest-profiling/) is a great start. Or you can try [using the cProfile module directly](https://maciej.lasyk.info/2016/Dec/14/python-unittest-cprofile-mock/).
+
+Another popular profiler [`pyinstrument`](https://pypi.org/project/pyinstrument/) provides examples [how to use it with `pytest`](https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-pytest-tests).
 
 # How do you run your tests?
 
@@ -154,6 +158,30 @@ But data population is slow too! Can we save/cache that as well? We sure can! In
 4. Rollback the transaction.
 
 Note that this approach does require you to be a bit more careful when writing tests, as they shouldn't do any database commits. If they do, you need to manually revert their changes.
+
+
+## Parallelization
+
+By default, pytest uses a single CPU core. Your laptop like has multiple cores. CI runners also come with multiple cores. It's just a waste of everyone's time not to use them all!
+
+
+### pytest-xdist
+
+The most popular tool to help you use all cores is [`pytest-xdist`](https://pypi.org/project/pytest-xdist). It supports running across multiple cores, multiple CPUs, even on remote machines!
+
+It usually doesn't work out-of-the-box in a real-world project with complex fixtures, databases involved, etc. The main reason is that `session`-scoped fixtures run on all workers. There are [a couple of workaround](https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once), but they are not trivial.
+
+For example, you can create a separate database for each `pytext-xdist` worker process and use the worker name/number as a suffix. [`pytest-django`](https://pytest-django.readthedocs.io/en/latest/database.html#use-the-same-database-for-all-xdist-processes) does this by default.
+
+### pytest-split
+
+Compared to `pytest-xdist`, `pytest-split` is easier to use. It does not really help with local development, but can greatly decrease the speed of your CI runs, without much or any changes to your tests.
+
+The way `pytest-split` works is that it splits the test suite to equally sized sub-suites based on test execution time. These sub-suites can be run in parallel in as many CI workers as your budget allows.
+
+Caveats:
+* To ensure 100% test coverage, you need to run an additional CI runner after all test runners have finished, that [collects and merges coverage reports](https://github.com/jerry-git/pytest-split-gh-actions-demo/blob/4f1331565e1c31aed536e1e0c2fcedf6656fb09a/.github/workflows/test.yml#L29).
+* `pytest-randomly` [seed needs to be pre-computed](https://jerry-git.github.io/pytest-split/#interactions-with-other-pytest-plugins) and fed into all CI runners.
 
 
 # Extra tips
