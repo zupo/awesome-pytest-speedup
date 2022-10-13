@@ -1,6 +1,6 @@
 # Awesome `pytest` speedup
 
-A checklist of best-practices to speed up your [pytest](https://pypi.org/project/pytest/) suite.
+A checklist of best practices to speed up your [pytest](https://pypi.org/project/pytest/) suite.
 
 Tick them off, one by one:
 
@@ -31,13 +31,13 @@ In other words:
 
 For timing the entire test suite, [`hyperfine`](https://github.com/sharkdp/hyperfine) is a *fantastic* tool.
 
-For timing single tests, `pytest --durations 10` will print out the slowest ten tests.
+For timing single tests, `pytest --durations 10` will print out the ten slowest tests.
 
 For measuring CPU usage and memory consumption, look at [`pytest-monitor`](https://pypi.org/project/pytest-monitor/).
 
 For detailed per-function-call profiling of tests, [`pytest-profiling`](https://pypi.org/project/pytest-profiling/) is a great start. Or you can try [using the cProfile module directly](https://maciej.lasyk.info/2016/Dec/14/python-unittest-cprofile-mock/).
 
-Another popular profiler [`pyinstrument`](https://pypi.org/project/pyinstrument/) provides examples [how to use it with `pytest`](https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-pytest-tests).
+Another popular profiler, [`pyinstrument`](https://pypi.org/project/pyinstrument/), provides examples of [how to use it with `pytest`](https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-pytest-tests).
 
 # How do you run your tests?
 
@@ -63,18 +63,18 @@ If it is slower, you can try the following:
     norecursedirs = docs *.egg-info .git .tox var/large_ml_model/
     ```
 
-* Tell `pytest` where exactly the tests are so it doesn't look anywhere else
+* Tell `pytest` exactly where the tests are so it doesn't look anywhere else:
 
     ```
     pytest src/my_app/tests
     ```
 
-* Maybe collection is slow because of some code in `contest.py`? Try running `pytest --collect-only --noconftest` to see if there is a difference. Much faster? Then it’s something in `conftest.py` that is causing the slowdown.
+* Maybe collection is slow because of some code in `conftest.py`? Try running `pytest --collect-only --noconftest` to see if there is a difference. Much faster? Then it’s something in `conftest.py` that is causing the slowdown.
 
 * Maybe imports are making collection slow. Try this:
     * `* python -X importtime -m pytest`
-    * Paste the output into https://kmichel.github.io/python-importtime-graph/
-    * See who the big offenders are
+    * Paste the output into https://kmichel.github.io/python-importtime-graph/.
+    * See who the big offenders are.
     * Try moving top-level imports into function imports.
     * This is especially likely to be the culprit if your code imports large libraries such as pytorch, opencv, Django, Plone, etc.
 
@@ -102,19 +102,19 @@ There is not much speedup to gain here, so I usually only disable the legacy one
 
 Hot take: you don't *always* have to run all tests:
 
-* [`pytest-skip-slow`](https://pypi.org/project/pytest-skip-slow/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it on local dev and potentially in CI branch runs. Run all tests in main CI run with `--slow`.
-* [`pytest-incremental`](https://pypi.org/project/pytest-incremental/) analyses your codebase & file modifications between test runs to decide which tests need to be run. Useful for local development, but also in CI: only run the full suite after diff-suite is green, and save some CPU minutes.
+* [`pytest-skip-slow`](https://pypi.org/project/pytest-skip-slow/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it in local dev and potentially in CI branch runs. Run all tests in the main CI run with `--slow`.
+* [`pytest-incremental`](https://pypi.org/project/pytest-incremental/) analyses your codebase and file modifications between test runs to decide which tests need to be run. Useful for local development, but also in CI: only run the full suite after diff-suite is green and save some CPU minutes.
 * [`pytest-testmon`](https://pypi.org/project/pytest-testmon/) does the same, but using [a smarter algorithm](https://testmon.org/determining-affected-tests.html) that includes looking into coverage report to decide which tests should run for a certain line change.
 
 # How do you write your tests?
 
 ## Network access
 
-Unit tests rarely need to access the Internet. Any network traffic is usually [mocked](https://realpython.com/testing-third-party-apis-with-mocks/), to be able to test various [responses](https://pypi.org/project/responses/), and to ensure tests are fasts by not having to wait for responses.
+Unit tests rarely need to access the Internet. Any network traffic is usually [mocked](https://realpython.com/testing-third-party-apis-with-mocks/) to be able to test various [responses](https://pypi.org/project/responses/) and to ensure tests are fast by not having to wait for responses.
 
-However, often we don't even realize that the code being tests is using the network. Maybe someone added support for loading profile pics from Gravatar and now a bunch of tests are pinging Gravatar API under the hood.
+However, often we don't even realize that the code being tested is using the network. Maybe someone added support for loading profile pics from Gravatar and now a bunch of tests are pinging the Gravatar API under the hood.
 
-[`pytest-socket`](https://pypi.org/project/pytest-socket/) is a great plugin to prevent inadvertent Internet access. Straightforward to use and with a bunch of escape hatches for those rare cases when you do in fact need network access in your test code.
+[`pytest-socket`](https://pypi.org/project/pytest-socket/) is a great plugin to prevent inadvertent internet access. Straightforward to use and with a bunch of escape hatches for those rare cases when you do in fact need network access in your test code.
 
 ## Disk access
 
