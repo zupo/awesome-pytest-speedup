@@ -4,13 +4,17 @@ A checklist of things to check and try to speed up your [pytest](TODO) suite.
 
 * [ ] [Hardware is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#hardware)
 * [ ] [Collection is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#collection)
-* [ ] [PYTHONDONTWRITEBYTECODE=1 is set](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#pythondontwritebytecode)   
-* [ ] Built-in pytest plugins are disabled
-* [ ] Network access is disabled
-* [ ] Disk access is disabled
+* [ ] [PYTHONDONTWRITEBYTECODE=1 is set](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#pythondontwritebytecode)
+* [ ] [Built-in pytest plugins are disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#builtin-plugins)
+* [ ] [Only a subset of tests are executed](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#be-picky)
+* [ ] [Network access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#network-access)
+* [ ] [Disk access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#disk-access)
 * [ ] Database access is optimized
 * [ ] Tests run in parallel
 
+With [general guidelines](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#measure-first) and some [extra tips](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#extra-tips).
+
+Let's start!
 
 # Measure first!
 
@@ -23,7 +27,11 @@ In other words:
 4. Leave it running for a few days.
 5. Rinse & repeat.
 
-For timing CLI commands, [`hyperfine`](https://github.com/sharkdp/hyperfine) is *fantastic*.
+For timing the entire test suite, [`hyperfine`](https://github.com/sharkdp/hyperfine) is a *fantastic* tool.
+
+For timing single tests, `pytest --durations 10` will print out the slowest ten tests.
+
+For measuring CPU usage and memory consumption, look at [`pytest-monitor`](https://pypi.org/project/pytest-monitor/).
 
 # How do you run your tests?
 
@@ -31,7 +39,7 @@ For timing CLI commands, [`hyperfine`](https://github.com/sharkdp/hyperfine) is 
 
 Modern laptops are incredibly fast. Why spend hours of time waiting for tests if you can throw money at the problem? Get a faster machine!
 
-Using a CI that gets very expensive as you increase CPU cores? Most of them allow you to use [self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) for cheap. Buy a few Mac Minis and have them run your tests, using all of their modern fast cores. 
+Using a CI that gets very expensive as you increase CPU cores? Most of them allow you to use [self-hosted runners](https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners) for cheap. Buy a few Mac Minis and have them run your tests, using all of their modern fast cores.
 
 ## Collection
 
@@ -74,35 +82,40 @@ On CIs it makes even less sense to do so. And can potentially even slow down the
 Most people won't benefit a ton from this, but it's an easy thing to try.
 
 
-## Disable plugins you don’t need
+## Builtin plugins
 
-Did you know that `pytest` comes with over 30 builtin plugins. You probably don’t need all of them.
+Did you know that `pytest` comes with over 30 builtin plugins? You probably don’t need all of them.
 
 * List them with `pytest --trace-config`
 * Disable with `pytest -p no:doctest`
 * I usually only disable the legacy ones: `-p no:pastebin -p no:nose -p no:doctest`
 
 
-## --durations
+## Be picky!
 
-Pytest comes with a built-in flag `--durations` that prints out the slowest tests. This is a great starting point.
+Hot take: you don't *always* have to run all tests:
 
-## pytest-monitor / pytest-testmon
-
-## profiling
-
-###
-
-### https://github.com/inconshreveable/sqltap
-
+* [`pytest-skip-slow`](https://pypi.org/project/pytest-incremental/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it on local dev and potentially on CI branches. Run all tests on main CI run with `--slow`.
+* [`pytest-incremental`](https://pypi.org/project/pytest-incremental/) analyses your codebase & file modifications between test runs to decide which tests need to be run. Useful for local development, but also in CI: only run the full suite after diff-suite is green.
+* [`pytest-testmon`](https://pypi.org/project/pytest-testmon/) does the same, but using [a smarter algorithm](https://testmon.org/determining-affected-tests.html) that includes looking into coverage report to decide which tests should run for a certain line change.
 
 # How do you write your tests?
 
 ## Network access
 
-- gravatar
+Unit tests rarely need to access the Internet. Any network traffic is usually mocked, to be able to test various responses, and to ensure tests don't wait for responses and are fast.
+
+However, often we don't even realize our tests are using the network. Maybe someone added support for loading profile pics from Gravatar and now a bunch of tests are pinging Gravatar API under the hood.
+
+`pytest-socket` is a great plugin to prevent inadvertent Internet access. Straightforward to use and with a bunch of escape hatches for those rare cases when you do in fact need network access in your test code.
 
 ## Disk access
+
+Unit tests ideally should not rely on the current filesystem to run successfully. If they do, they are more error prone as the filesystem can change, and are also slower if they write stuff to the disk.
+
+One alternative is [mocking disk i/o calls](https://nickolaskraus.io/articles/how-to-mock-the-built-in-function-open/).
+
+Another is a temporary in-memory filesystem, provided by [`pyfakefs`](https://github.com/pytest-dev/pyfakefs), making your tests both safer and faster.
 
 
 ## Database access
@@ -132,7 +145,31 @@ save CPU cycles, save money
 
 
 
-# Bonus karma points
+## --durations
+
+Pytest comes with a built-in flag `--durations` that prints out the slowest tests. This is a great starting point.
+
+## pytest-monitor / pytest-testmon
+
+## profiling
+
+###
+
+### https://github.com/inconshreveable/sqltap
+
+
+
+
+# Extra tips
+
+## `pytest --lf`
+
+Or [`pytest --last-failed`](https://docs.pytest.org/en/7.1.x/how-to/cache.html?highlight=last%20failed), it tells `pytest` to only run tests that have failed during the last run. Handy in local development to decrease iteration time.
+
+## Handy pytest plugins
+
+There are some pytest plugins that I tend to use in every project. I listed them on https://niteo.co/blog/indispensable-pytest-plugins.
+
 
 ## [Pyramid] config.scan()
 
