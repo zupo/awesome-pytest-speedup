@@ -94,15 +94,16 @@ Did you know that `pytest` comes with over 30 builtin plugins? You probably donâ
 
 * List them with `pytest --trace-config`
 * Disable with `pytest -p no:doctest`
-* I usually only disable the legacy ones: `-p no:pastebin -p no:nose -p no:doctest`
+
+There is not much speedup to gain here, so I usually only disable the legacy ones: `-p no:pastebin -p no:nose -p no:doctest`
 
 
 ## Be picky!
 
 Hot take: you don't *always* have to run all tests:
 
-* [`pytest-skip-slow`](https://pypi.org/project/pytest-skip-slow/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it on local dev and potentially on CI branches. Run all tests on main CI run with `--slow`.
-* [`pytest-incremental`](https://pypi.org/project/pytest-incremental/) analyses your codebase & file modifications between test runs to decide which tests need to be run. Useful for local development, but also in CI: only run the full suite after diff-suite is green.
+* [`pytest-skip-slow`](https://pypi.org/project/pytest-skip-slow/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it on local dev and potentially in CI branch runs. Run all tests in main CI run with `--slow`.
+* [`pytest-incremental`](https://pypi.org/project/pytest-incremental/) analyses your codebase & file modifications between test runs to decide which tests need to be run. Useful for local development, but also in CI: only run the full suite after diff-suite is green, and save some CPU minutes.
 * [`pytest-testmon`](https://pypi.org/project/pytest-testmon/) does the same, but using [a smarter algorithm](https://testmon.org/determining-affected-tests.html) that includes looking into coverage report to decide which tests should run for a certain line change.
 
 # How do you write your tests?
@@ -162,12 +163,12 @@ But data population is slow too! Can we save/cache that as well? We sure can! In
 Note that this approach does require you to be a bit more careful when writing tests, as they shouldn't do any database commits. If they do, you need to manually revert their changes.
 
 
-## Parallelization
+# Parallelization
 
 By default, pytest uses a single CPU core. Your laptop like has multiple cores. CI runners also come with multiple cores. It's just a waste of everyone's time not to use them all!
 
 
-### pytest-xdist
+## pytest-xdist
 
 The most popular tool to help you use all cores is [`pytest-xdist`](https://pypi.org/project/pytest-xdist). It supports running across multiple cores, multiple CPUs, even on remote machines!
 
@@ -175,7 +176,7 @@ It usually doesn't work out-of-the-box in a real-world project with complex fixt
 
 For example, you can create a separate database for each `pytext-xdist` worker process and use the worker name/number as a suffix. [`pytest-django`](https://pytest-django.readthedocs.io/en/latest/database.html#use-the-same-database-for-all-xdist-processes) does this by default.
 
-### pytest-split
+## pytest-split
 
 Compared to `pytest-xdist`, `pytest-split` is easier to use. It does not really help with local development, but can greatly decrease the speed of your CI runs, without much or any changes to your tests.
 
