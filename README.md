@@ -85,7 +85,7 @@ As per [The Hitchhiker's Guide to Python](https://docs.python-guide.org/writing/
 
 On CIs it makes even less sense to do so. And can potentially even slow down the execution of your test suite.
 
-Most people won't benefit a ton from this, but it's an easy thing to try.
+Most people won't benefit a ton from this, but it's an easy thing to try: add `export PYTHONDONTWRITEBYTECODE=1` to your `~/.profile` and your CI configuration.
 
 
 ## Builtin plugins
