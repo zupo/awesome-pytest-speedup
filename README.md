@@ -1,6 +1,6 @@
 # Awesome `pytest` speedup
 
-A checklist of things to check when your [pytest](https://pypi.org/project/pytest/) suite is too slow.
+A checklist of potential pitfalls to check when your [pytest](https://pypi.org/project/pytest/) suite is too slow.
 
 * [ ] [Hardware is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#hardware)
 * [ ] [Collection is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#collection)
