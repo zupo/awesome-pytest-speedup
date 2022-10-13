@@ -4,17 +4,17 @@ A checklist of best-practices to speed up your [pytest](https://pypi.org/project
 
 Tick them off, one by one:
 
-* [ ] [Hardware is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#hardware)
-* [ ] [Collection is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#collection)
-* [ ] [PYTHONDONTWRITEBYTECODE=1 is set](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#pythondontwritebytecode)
-* [ ] [Built-in pytest plugins are disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#builtin-plugins)
-* [ ] [Only a subset of tests are executed](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#be-picky)
-* [ ] [Network access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#network-access)
-* [ ] [Disk access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#disk-access)
-* [ ] [Database access is optimized](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#database-access)
-* [ ] [Tests run in parallel](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#parallelization)
+* [ ] [Hardware is fast](https://github.com/zupo/awesome-pytest-speedup#hardware)
+* [ ] [Collection is fast](https://github.com/zupo/awesome-pytest-speedup#collection)
+* [ ] [PYTHONDONTWRITEBYTECODE=1 is set](https://github.com/zupo/awesome-pytest-speedup#pythondontwritebytecode)
+* [ ] [Built-in pytest plugins are disabled](https://github.com/zupo/awesome-pytest-speedup#builtin-plugins)
+* [ ] [Only a subset of tests are executed](https://github.com/zupo/awesome-pytest-speedup#be-picky)
+* [ ] [Network access is disabled](https://github.com/zupo/awesome-pytest-speedup#network-access)
+* [ ] [Disk access is disabled](https://github.com/zupo/awesome-pytest-speedup#disk-access)
+* [ ] [Database access is optimized](https://github.com/zupo/awesome-pytest-speedup#database-access)
+* [ ] [Tests run in parallel](https://github.com/zupo/awesome-pytest-speedup#parallelization)
 
-With [general guidelines](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#measure-first) and some [extra tips](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#extra-tips).
+With [general guidelines](https://github.com/zupo/awesome-pytest-speedup#measure-first) and some [extra tips](https://github.com/zupo/awesome-pytest-speedup#extra-tips).
 
 Let's start!
 
