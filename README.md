@@ -32,6 +32,29 @@ For timing CLI commands, [`hyperfine`](https://github.com/sharkdp/hyperfine) is 
 
 ## Collection
 
+Collection is the first part of running a test suite: finding all tests that need to be run. It has to be super fast because it happens even if you run a single test.
+
+Use the `-—collect-only` flag to see how fast (or slow) the collection step is. On a modern laptop, the collection should be take around 1s per 1000 tests, maybe up to 2s or 3s per 1000 tests for large codebases.
+
+If it is slower, you can try the following:
+
+* Tell `pytest` not to look into certain folders:
+
+```
+# pytest.ini
+[pytest]
+norecursedirs = docs *.egg-info .git .tox var/large_ml_model/
+```
+
+* Tell `pytest` where exactly the tests are so it doesn't look anywhere else
+
+```
+pytest src/my_app/tests
+```
+
+* Maybe collection is slow because of some code in `contest.py`? Try running `pytest --collect-only --noconftest` to see if there is a difference. Much faster? Then it’s something in `conftest.py` that is causing the slowdown.
+
+
 ## Better hardware
 
 ## Split into smaller packages
