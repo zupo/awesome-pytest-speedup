@@ -1,6 +1,6 @@
 # Awesome `pytest` speedup
 
-A checklist of potential pitfalls to check when your [pytest](https://pypi.org/project/pytest/) suite is too slow.
+A checklist of best-practices to speed up your [pytest](https://pypi.org/project/pytest/) suite.
 
 * [ ] [Hardware is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#hardware)
 * [ ] [Collection is fast](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#collection)
@@ -9,7 +9,7 @@ A checklist of potential pitfalls to check when your [pytest](https://pypi.org/p
 * [ ] [Only a subset of tests are executed](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#be-picky)
 * [ ] [Network access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#network-access)
 * [ ] [Disk access is disabled](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#disk-access)
-* [ ] Database access is optimized
+* [ ] [Database access is optimized](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#database-access)
 * [ ] Tests run in parallel
 
 With [general guidelines](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#measure-first) and some [extra tips](https://github.com/zupo/awesome-pytest-speedup/blob/main/README.md#extra-tips).
@@ -95,7 +95,7 @@ Did you know that `pytest` comes with over 30 builtin plugins? You probably donâ
 
 Hot take: you don't *always* have to run all tests:
 
-* [`pytest-skip-slow`](https://pypi.org/project/pytest-incremental/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it on local dev and potentially on CI branches. Run all tests on main CI run with `--slow`.
+* [`pytest-skip-slow`](https://pypi.org/project/pytest-skip-slow/) Skip known slow tests by adding the `@pytest.mark.slow` decorator. Do it on local dev and potentially on CI branches. Run all tests on main CI run with `--slow`.
 * [`pytest-incremental`](https://pypi.org/project/pytest-incremental/) analyses your codebase & file modifications between test runs to decide which tests need to be run. Useful for local development, but also in CI: only run the full suite after diff-suite is green.
 * [`pytest-testmon`](https://pypi.org/project/pytest-testmon/) does the same, but using [a smarter algorithm](https://testmon.org/determining-affected-tests.html) that includes looking into coverage report to decide which tests should run for a certain line change.
 
@@ -117,47 +117,43 @@ One alternative is [mocking disk i/o calls](https://nickolaskraus.io/articles/ho
 
 Another is a temporary in-memory filesystem, provided by [`pyfakefs`](https://github.com/pytest-dev/pyfakefs), making your tests both safer and faster.
 
-
 ## Database access
 
-* do everything on every test
-* do it once and truncate
-* do it once and don't commit()
+Testing web apps usually requires some database access in tests, and that's OK. There are still several optimizations possible.
 
-# Parallelization
+### Do all tests need a database?
 
-## pytest-xdist
+Some tests could potentially be rewritten in a way that does not require a database to do the testing. For example, if calculating a user's age, there is no need to fetch a birth date from a DB. It's better to provide a fake birth date to the calculation function, and remove the test's dependency on the database fixture.
 
-## pytest-split
+### Do all tests need the entire database?
 
+Populating the database with test data takes time. Do all tests need the entire dummy dataset? If a group of test is testing some user profile feature, they potentially don't need to populate non-relevant tables in the database.
 
-# Bonus karma points
+### Only prepare the database once
 
-## pytest --lf
+Preparing, using and then destroying the dummy database for every test is wasteful. There are better approaches.
 
-## pytest-skip-slow for local dev
+#### Truncate
 
-## pytest-incremental / pytest-cov-exclude for local and/or branch-only CI
+Instead of destroying the database after a test run, rather [`TRUNCATE` its tables](https://www.niklas-meinzer.de/post/2019-07_pytest-performance/#database-setup-and-tear-down). This saves your from re-creating the database for the next test.
 
-## pytest-instafail
-
-save CPU cycles, save money
-
-
-
-## --durations
-
-Pytest comes with a built-in flag `--durations` that prints out the slowest tests. This is a great starting point.
-
-## pytest-monitor / pytest-testmon
-
-## profiling
-
-###
-
-### https://github.com/inconshreveable/sqltap
+1. Create your test database, once.
+2. Populate it with data for the test.
+3. Execute a test over it.
+4. `TRUNCATE` your tables, i.e. fast remove all data.
+5. Populate with data for next test and run the test, rinse & repeat.
 
 
+#### Rollback
+
+But data population is slow too! Can we save/cache that as well? We sure can! Instead of `TRUNCATE`-ing all tables, we could just rollback the transaction the test used. And such, no data needs to be prepared for the next test, just run it.
+
+1. Create your test database, once.
+2. Populate it with dummy data, once.
+3. Execute a test over it, making sure the test does not commit anything.
+4. Rollback the transaction.
+
+Note that this approach does require you to be a bit more careful when writing tests, as they shouldn't do any database commits. If they do, you need to manually revert their changes.
 
 
 # Extra tips
@@ -171,9 +167,9 @@ Or [`pytest --last-failed`](https://docs.pytest.org/en/7.1.x/how-to/cache.html?h
 There are some pytest plugins that I tend to use in every project. I listed them on https://niteo.co/blog/indispensable-pytest-plugins.
 
 
-## [Pyramid] config.scan()
+## config.scan()
 
-If you are using Pyramid's `config.scan()`, that is a potential bottleneck in large codebases. You could speed it up by [telling it to ignore folders with tests](https://medium.com/partoo/speeding-up-tests-with-pytest-and-postgresql-a308b28228fe).
+If you are using Pyramid's [`config.scan()`](https://github.com/teamniteo/pyramid-realworld-example-app/blob/f1fed0d0592b1c6e9a4feb6b162cffd4605f5f44/src/conduit/__init__.py#L57), that is a potential bottleneck in large codebases. You could speed it up by [telling it to ignore folders with tests](https://medium.com/partoo/speeding-up-tests-with-pytest-and-postgresql-a308b28228fe).
 
 ```
 config.scan(ignore=[".tests"])
