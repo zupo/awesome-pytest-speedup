@@ -110,11 +110,11 @@ Hot take: you don't *always* have to run all tests:
 
 ## Network access
 
-Unit tests rarely need to access the Internet. Any network traffic is usually mocked, to be able to test various responses, and to ensure tests don't wait for responses and are fast.
+Unit tests rarely need to access the Internet. Any network traffic is usually [mocked](https://realpython.com/testing-third-party-apis-with-mocks/), to be able to test various [responses](https://pypi.org/project/responses/), and to ensure tests are fasts by not having to wait for responses.
 
-However, often we don't even realize our tests are using the network. Maybe someone added support for loading profile pics from Gravatar and now a bunch of tests are pinging Gravatar API under the hood.
+However, often we don't even realize that the code being tests is using the network. Maybe someone added support for loading profile pics from Gravatar and now a bunch of tests are pinging Gravatar API under the hood.
 
-`pytest-socket` is a great plugin to prevent inadvertent Internet access. Straightforward to use and with a bunch of escape hatches for those rare cases when you do in fact need network access in your test code.
+[`pytest-socket`](https://pypi.org/project/pytest-socket/) is a great plugin to prevent inadvertent Internet access. Straightforward to use and with a bunch of escape hatches for those rare cases when you do in fact need network access in your test code.
 
 ## Disk access
 
@@ -165,14 +165,14 @@ Note that this approach does require you to be a bit more careful when writing t
 
 # Parallelization
 
-By default, pytest uses a single CPU core. Your laptop like has multiple cores. CI runners also come with multiple cores. It's just a waste of everyone's time not to use them all!
+By default, pytest uses a single CPU core. Your laptop likely has multiple cores. CI runners also come with multiple cores. It's just a waste of everyone's time not to use them all!
 
 
 ## pytest-xdist
 
 The most popular tool to help you use all cores is [`pytest-xdist`](https://pypi.org/project/pytest-xdist). It supports running across multiple cores, multiple CPUs, even on remote machines!
 
-It usually doesn't work out-of-the-box in a real-world project with complex fixtures, databases involved, etc. The main reason is that `session`-scoped fixtures run on all workers. There are [a couple of workaround](https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once), but they are not trivial.
+It usually doesn't work out-of-the-box in a real-world project with complex fixtures, databases involved, etc. The main reason is that `session`-scoped fixtures run on all workers, not just once. There are [a couple of workarounds](https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once), but they are not trivial.
 
 For example, you can create a separate database for each `pytext-xdist` worker process and use the worker name/number as a suffix. [`pytest-django`](https://pytest-django.readthedocs.io/en/latest/database.html#use-the-same-database-for-all-xdist-processes) does this by default.
 
