@@ -189,6 +189,10 @@ Caveats:
 
 # Extra tips
 
+## Keep 'em fast!
+
+It is really annoying to invest time into speeding up your test suite, only to come back to the codebase a few months later to find out that the tests are slow again. No more! Check out BlueRacer.io, a simple GitHub App that block a Pull Request from merging if tests have become slower: https://github.com/apps/blueracer-io
+
 ## `pytest --lf`
 
 Or [`pytest --last-failed`](https://docs.pytest.org/en/7.1.x/how-to/cache.html?highlight=last%20failed), it tells `pytest` to only run tests that have failed during the last run. Handy in local development to decrease iteration time.
