@@ -14,9 +14,9 @@ Tick them off, one by one:
 * [ ] [Database access is optimized](https://github.com/zupo/awesome-pytest-speedup#database-access)
 * [ ] [Tests run in parallel](https://github.com/zupo/awesome-pytest-speedup#parallelization)
 
-If you prefer video, here's a recording of my talk going through some of the above: https://www.youtube.com/watch?v=uvkSOaFYsLo
+There's a recording of my talk going through some of the above: https://www.youtube.com/watch?v=uvkSOaFYsLo
 
-With [general guidelines](https://github.com/zupo/awesome-pytest-speedup#measure-first) and some [extra tips](https://github.com/zupo/awesome-pytest-speedup#extra-tips).
+Finally, read [general guidelines](https://github.com/zupo/awesome-pytest-speedup#measure-first) before you start and later on go through the [extra tips](https://github.com/zupo/awesome-pytest-speedup#extra-tips).
 
 Let's start!
 
