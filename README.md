@@ -1,4 +1,4 @@
-# Awesome `pytest` speedup
+# Awesome pytest speedup
 
 A checklist of best practices to speed up your [pytest](https://pypi.org/project/pytest/) suite.
 
@@ -14,9 +14,9 @@ Tick them off, one by one:
 * [ ] [Database access is optimized](https://github.com/zupo/awesome-pytest-speedup#database-access)
 * [ ] [Tests run in parallel](https://github.com/zupo/awesome-pytest-speedup#parallelization)
 
-There's a recording of my talk going through some of the above: https://www.youtube.com/watch?v=uvkSOaFYsLo
+There's a recording of my talk going through some of the above at https://www.youtube.com/watch?v=uvkSOaFYsLo.
 
-Finally, read [general guidelines](https://github.com/zupo/awesome-pytest-speedup#measure-first) before you start and later on go through the [extra tips](https://github.com/zupo/awesome-pytest-speedup#extra-tips).
+Finally, read the [general guidelines](https://github.com/zupo/awesome-pytest-speedup#measure-first) before you start and later on go through the [extra tips](https://github.com/zupo/awesome-pytest-speedup#extra-tips).
 
 Let's start!
 
@@ -39,7 +39,7 @@ For measuring CPU usage and memory consumption, look at [`pytest-monitor`](https
 
 For detailed per-function-call profiling of tests, [`pytest-profiling`](https://pypi.org/project/pytest-profiling/) is a great start. Or you can try [using the cProfile module directly](https://maciej.lasyk.info/2016/Dec/14/python-unittest-cprofile-mock/).
 
-Another popular profiler, [`pyinstrument`](https://pypi.org/project/pyinstrument/), provides examples of [how to use it with `pytest`](https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-pytest-tests).
+Another popular profiler, [`pyinstrument`](https://pypi.org/project/pyinstrument/), provides examples of [how to use it with pytest](https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-pytest-tests).
 
 # How do you run your tests?
 
@@ -57,7 +57,7 @@ Use the `-—collect-only` flag to see how fast (or slow) the collection step is
 
 If it is slower, you can try the following:
 
-* Tell `pytest` not to look into certain folders:
+* Tell pytest not to look into certain folders:
 
     ```
     # pytest.ini
@@ -65,7 +65,7 @@ If it is slower, you can try the following:
     norecursedirs = docs *.egg-info .git .tox var/large_ml_model/
     ```
 
-* Tell `pytest` exactly where the tests are so it doesn't look anywhere else:
+* Tell pytest exactly where the tests are so it doesn't look anywhere else:
 
     ```
     pytest src/my_app/tests
@@ -92,7 +92,7 @@ Most people won't benefit a ton from this, but it's an easy thing to try: add `e
 
 ## Builtin plugins
 
-Did you know that `pytest` comes with over 30 builtin plugins? You probably don’t need all of them.
+Did you know that pytest comes with over 30 builtin plugins? You probably don’t need all of them.
 
 * List them with `pytest --trace-config`
 * Disable with `pytest -p no:doctest`
@@ -120,49 +120,49 @@ However, often we don't even realize that the code being tested is using the net
 
 ## Disk access
 
-Unit tests ideally should not rely on the current filesystem to run successfully. If they do, they are more error prone as the filesystem can change, and are also slower if they write stuff to the disk.
+Unit tests should ideally not rely on the current filesystem to run successfully. If they do, they are more error prone as the filesystem can change, and are also slower if they write stuff to the disk.
 
-One alternative is [mocking disk i/o calls](https://nickolaskraus.io/articles/how-to-mock-the-built-in-function-open/).
+One alternative is [mocking disk I/O calls](https://nickolaskraus.io/articles/how-to-mock-the-built-in-function-open/).
 
 Another is a temporary in-memory filesystem, provided by [`pyfakefs`](https://github.com/pytest-dev/pyfakefs), making your tests both safer and faster.
 
 ## Database access
 
-Testing web apps usually requires some database access in tests, and that's OK. There are still several optimizations possible.
+Testing web apps usually requires some database access in tests, and that's OK. There are still several optimizations available.
 
 ### Do all tests need a database?
 
-Some tests could potentially be rewritten in a way that does not require a database to do the testing. For example, if calculating a user's age, there is no need to fetch a birth date from a DB. It's better to provide a fake birth date to the calculation function, and remove the test's dependency on the database fixture.
+Some tests could potentially be rewritten in a way that does not require a database to do the testing. For example, if calculating a user's age, there is no need to fetch a birth date from a DB. It's better to provide a fake birth date to the calculation function and remove the test's dependency on the database fixture.
 
 ### Do all tests need the entire database?
 
-Populating the database with test data takes time. Do all tests need the entire dummy dataset? If a group of test is testing some user profile feature, they potentially don't need to populate non-relevant tables in the database.
+Populating the database with test data takes time. Do all tests need the entire dummy dataset? If a group of tests is testing some user profile feature, they potentially don't need to populate non-relevant tables in the database.
 
 ### Only prepare the database once
 
-Preparing, using and then destroying the dummy database for every test is wasteful. There are better approaches.
+Preparing, using, and then destroying the dummy database for every test is wasteful. There are better approaches.
 
 #### Truncate
 
-Instead of destroying the database after a test run, rather [`TRUNCATE` its tables](https://www.niklas-meinzer.de/post/2019-07_pytest-performance/#database-setup-and-tear-down). This saves your from re-creating the database for the next test.
+Instead of destroying the database after a test run, rather [`TRUNCATE` its tables](https://www.niklas-meinzer.de/post/2019-07_pytest-performance/#database-setup-and-tear-down). This saves you from recreating the database for every test that relies on it.
 
-1. Create your test database, once.
+1. Create your test database once.
 2. Populate it with data for the test.
 3. Execute a test over it.
 4. `TRUNCATE` your tables, i.e. fast remove all data.
-5. Populate with data for next test and run the test, rinse & repeat.
+5. Populate with data for the next test, run the test, rinse & repeat.
 
 
 #### Rollback
 
-But data population is slow too! Can we save/cache that as well? We sure can! Instead of `TRUNCATE`-ing all tables, we could just rollback the transaction the test used. And such, no data needs to be prepared for the next test, just run it.
+But data population is slow too! Can we save/cache that as well? We sure can! Instead of `TRUNCATE`-ing all tables, we could just rollback the transaction the test used. As a result, no data needs to be prepared for the next test and it can just be run.
 
-1. Create your test database, once.
-2. Populate it with dummy data, once.
+1. Create your test database once.
+2. Populate it with dummy data once.
 3. Execute a test over it, making sure the test does not commit anything.
 4. Rollback the transaction.
 
-Note that this approach does require you to be a bit more careful when writing tests, as they shouldn't do any database commits. If they do, you need to manually revert their changes.
+Note that this approach requires you to be a bit more careful when writing tests, as they shouldn't do any database commits. If they do, you need to manually revert their changes.
 
 
 # Parallelization
@@ -172,7 +172,7 @@ By default, pytest uses a single CPU core. Your laptop likely has multiple cores
 
 ## pytest-xdist
 
-The most popular tool to help you use all cores is [`pytest-xdist`](https://pypi.org/project/pytest-xdist). It supports running across multiple cores, multiple CPUs, even on remote machines!
+The most popular tool to help you use all cores is [`pytest-xdist`](https://pypi.org/project/pytest-xdist). It supports running across multiple cores and CPUs, even on remote machines!
 
 It usually doesn't work out-of-the-box in a real-world project with complex fixtures, databases involved, etc. The main reason is that `session`-scoped fixtures run on all workers, not just once. There are [a couple of workarounds](https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once), but they are not trivial.
 
@@ -180,12 +180,12 @@ For example, you can create a separate database for each `pytext-xdist` worker p
 
 ## pytest-split
 
-Compared to `pytest-xdist`, `pytest-split` is easier to use. It does not really help with local development, but can greatly decrease the speed of your CI runs, without much or any changes to your tests.
+Compared to `pytest-xdist`, `pytest-split` is easier to use. It does not really help with local development, but it can greatly decrease the speed of your CI runs without much or any changes to your tests.
 
 The way `pytest-split` works is that it splits the test suite to equally sized sub-suites based on test execution time. These sub-suites can be run in parallel in as many CI workers as your budget allows.
 
 Caveats:
-* To ensure 100% test coverage, you need to run an additional CI runner after all test runners have finished, that [collects and merges coverage reports](https://github.com/jerry-git/pytest-split-gh-actions-demo/blob/4f1331565e1c31aed536e1e0c2fcedf6656fb09a/.github/workflows/test.yml#L29).
+* To ensure 100% test coverage, you need to run an additional CI runner after all test runners have finished that [collects and merges coverage reports](https://github.com/jerry-git/pytest-split-gh-actions-demo/blob/4f1331565e1c31aed536e1e0c2fcedf6656fb09a/.github/workflows/test.yml#L29).
 * `pytest-randomly` [seed needs to be pre-computed](https://jerry-git.github.io/pytest-split/#interactions-with-other-pytest-plugins) and fed into all CI runners.
 
 
@@ -193,20 +193,20 @@ Caveats:
 
 ## Keep 'em fast!
 
-It is really annoying to invest time into speeding up your test suite, only to come back to the codebase a few months later to find out that the tests are slow again. No more! Check out BlueRacer.io, a simple GitHub App that block a Pull Request from merging if tests have become slower: https://github.com/apps/blueracer-io
+It is really annoying to invest time into speeding up your test suite, only to come back to the codebase a few months later to discover that the tests are slow again. No more! Check out BlueRacer.io, a simple GitHub App that blocks a Pull Request from merging if tests have become slower: https://github.com/apps/blueracer-io.
 
 ## `pytest --lf`
 
-Or [`pytest --last-failed`](https://docs.pytest.org/en/7.1.x/how-to/cache.html?highlight=last%20failed), it tells `pytest` to only run tests that have failed during the last run. Handy in local development to decrease iteration time.
+`pytest --lf`, or [`pytest --last-failed`](https://docs.pytest.org/en/7.1.x/how-to/cache.html?highlight=last%20failed), tells pytest to only run tests that have failed during the last run. Handy in local development to decrease iteration time.
 
 ## Handy pytest plugins
 
-There are some pytest plugins that I tend to use in every project. I listed them on https://niteo.co/blog/indispensable-pytest-plugins.
+There are some pytest plugins that I tend to use in every project. I've listed them on https://niteo.co/blog/indispensable-pytest-plugins.
 
 
 ## config.scan()
 
-If you are using Pyramid's [`config.scan()`](https://github.com/teamniteo/pyramid-realworld-example-app/blob/f1fed0d0592b1c6e9a4feb6b162cffd4605f5f44/src/conduit/__init__.py#L57), that is a potential bottleneck in large codebases. You could speed it up by [telling it to ignore folders with tests](https://medium.com/partoo/speeding-up-tests-with-pytest-and-postgresql-a308b28228fe).
+If you are using Pyramid's [`config.scan()`](https://github.com/teamniteo/pyramid-realworld-example-app/blob/f1fed0d0592b1c6e9a4feb6b162cffd4605f5f44/src/conduit/__init__.py#L57), then it's a potential bottleneck in large codebases. You could speed it up by [telling it to ignore folders with tests](https://medium.com/partoo/speeding-up-tests-with-pytest-and-postgresql-a308b28228fe).
 
 ```
 config.scan(ignore=[".tests"])
