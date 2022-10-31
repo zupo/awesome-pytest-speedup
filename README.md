@@ -70,7 +70,7 @@ If it is slower, you can try the following:
     ```
     # pytest.ini
     [pytest]
-    testpaths = src/my_app/tests
+    testpaths = tests
     ```
     
     or
