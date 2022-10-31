@@ -68,6 +68,14 @@ If it is slower, you can try the following:
 * Tell pytest exactly where the tests are so it doesn't look anywhere else:
 
     ```
+    # pytest.ini
+    [pytest]
+    testpaths = src/my_app/tests
+    ```
+    
+    or
+
+    ```
     pytest src/my_app/tests
     ```
 
