@@ -53,7 +53,7 @@ Using a CI that gets very expensive as you increase CPU cores? Most of them allo
 
 Collection is the first part of running a test suite: finding all tests that need to be run. It has to be super fast because it happens even if you run a single test.
 
-Use the `-—collect-only` flag to see how fast (or slow) the collection step is. On a modern laptop, the collection should be take around 1s per 1000 tests, maybe up to 2s or 3s per 1000 tests for large codebases.
+Use the `--collect-only` flag to see how fast (or slow) the collection step is. On a modern laptop, the collection should be take around 1s per 1000 tests, maybe up to 2s or 3s per 1000 tests for large codebases.
 
 If it is slower, you can try the following:
 
