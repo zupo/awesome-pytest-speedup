@@ -184,7 +184,7 @@ The most popular tool to help you use all cores is [`pytest-xdist`](https://pypi
 
 It usually doesn't work out-of-the-box in a real-world project with complex fixtures, databases involved, etc. The main reason is that `session`-scoped fixtures run on all workers, not just once. There are [a couple of workarounds](https://pypi.org/project/pytest-xdist/#making-session-scoped-fixtures-execute-only-once), but they are not trivial.
 
-For example, you can create a separate database for each `pytext-xdist` worker process and use the worker name/number as a suffix. [`pytest-django`](https://pytest-django.readthedocs.io/en/latest/database.html#use-the-same-database-for-all-xdist-processes) does this by default.
+For example, you can create a separate database for each `pytest-xdist` worker process and use the worker name/number as a suffix. [`pytest-django`](https://pytest-django.readthedocs.io/en/latest/database.html#use-the-same-database-for-all-xdist-processes) does this by default.
 
 ## pytest-split
 
