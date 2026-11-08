@@ -80,6 +80,8 @@ If it is slower, you can try the following:
     ```
 
 * Maybe collection is slow because of some code in `conftest.py`? Try running `pytest --collect-only --noconftest` to see if there is a difference. Much faster? Then it’s something in `conftest.py` that is causing the slowdown.
+  
+* Same few tests again and again? pytest's own start-up is paid on each run. My project [speedrunner](https://github.com/anthonyGosme/speedrunner) keeps pytest loaded in a daemon and forks it per run, called as `pytest`, `python -m pytest` or through `uv run` (`pytest -q`: 184 ms to 66 ms on a small suite on a 2-vCPU VPS; large suites not measured). Linux and macOS; the first run gains nothing.
 
 * Maybe imports are making collection slow. Try this:
     * `* python -X importtime -m pytest`
